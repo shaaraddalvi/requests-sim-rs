@@ -25,10 +25,7 @@ async fn make_request() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-
+async fn loop_requests() {
     let mut wait_duration = thread_rng().sample(Uniform::new(1000u64, 4000));
 
     while let _ = sleep(Duration::from_millis(wait_duration)).await {
@@ -39,6 +36,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         wait_duration = thread_rng().sample(Uniform::new(1000u64, 4000));
     }
+}
+
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+
+    tokio::spawn(async {
+        loop_requests().await;
+    }).await;
 
     Ok(())
 }
