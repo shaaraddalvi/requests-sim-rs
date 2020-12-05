@@ -1,9 +1,9 @@
-use tokio::net::TcpStream;
-use tokio::time::{sleep, Duration};
-use tokio::prelude::*;
-use std::error::Error;
-use rand::{thread_rng, Rng};
 use rand::distributions::Uniform;
+use rand::{thread_rng, Rng};
+use std::error::Error;
+use tokio::net::TcpStream;
+use tokio::prelude::*;
+use tokio::time::{sleep, Duration};
 
 async fn make_request() -> Result<(), Box<dyn Error>> {
     // Connect to a peer
@@ -17,9 +17,7 @@ async fn make_request() -> Result<(), Box<dyn Error>> {
         Ok(_) => {
             println!("{}", buffer);
         }
-        Err(_) => {
-
-        }
+        Err(_) => {}
     }
 
     Ok(())
@@ -30,7 +28,7 @@ async fn loop_requests() {
 
     while let _ = sleep(Duration::from_millis(wait_duration)).await {
         println!("spawning");
-        tokio::spawn(async move  {
+        tokio::spawn(async move {
             make_request().await;
         });
 
@@ -38,13 +36,12 @@ async fn loop_requests() {
     }
 }
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-
     tokio::spawn(async {
         loop_requests().await;
-    }).await;
+    })
+    .await;
 
     Ok(())
 }

@@ -1,9 +1,9 @@
-use tokio::{net::TcpListener, stream::StreamExt};
+use rand::distributions::Uniform;
+use rand::{thread_rng, Rng};
+use std::error::Error;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
-use rand::{thread_rng, Rng};
-use rand::distributions::Uniform;
-use std::error::Error;
+use tokio::{net::TcpListener, stream::StreamExt};
 
 async fn process_stream(mut stream: tokio::net::TcpStream) {
     let wait_duration = thread_rng().sample(Uniform::new(1000u64, 20000));
@@ -20,9 +20,7 @@ async fn process_stream(mut stream: tokio::net::TcpStream) {
             stream.write_all("Got".as_bytes()).await;
             println!("Sent");
         }
-        Err(_) => {
-
-        }
+        Err(_) => {}
     }
 }
 
@@ -31,11 +29,9 @@ async fn handle_tcp() {
     while let Some(stream) = listener.next().await {
         match stream {
             Ok(stream) => {
-
                 tokio::spawn(async move {
                     process_stream(stream).await;
                 });
-                
             }
             Err(_) => { /* connection failed */ }
         }
