@@ -25,7 +25,10 @@ use tui::{
 };
 
 /// Child task that takes a connection, simulates artificial delay and sends the repsponse
-async fn process_stream(mut stream: tokio::net::TcpStream, tx: mpsc::Sender<isize>) -> Result<(), Box<dyn Error>> {
+async fn process_stream(
+    mut stream: tokio::net::TcpStream,
+    tx: mpsc::Sender<isize>,
+) -> Result<(), Box<dyn Error>> {
     let wait_duration = thread_rng().sample(Uniform::new(1000u64, 20000));
 
     tx.send(1).await?;
@@ -55,7 +58,10 @@ async fn handle_tcp(tx: mpsc::Sender<isize>) -> Result<(), Box<dyn Error>> {
             Ok(stream) => {
                 let tx2 = tx.clone();
                 tokio::spawn(async move {
-                    process_stream(stream, tx2).await;
+                    match process_stream(stream, tx2).await {
+                        Ok(_) => {}
+                        Err(_) => {}
+                    }
                 });
             }
             Err(_) => { /* connection failed */ }
@@ -154,19 +160,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut handles = Vec::new();
 
     handles.push(tokio::spawn(async {
-        handle_tcp(tx).await;
+        match handle_tcp(tx).await {
+            Ok(_) => {}
+            Err(_) => {}
+        }
     }));
 
     let counter_arc = Arc::new(Mutex::<isize>::new(0));
 
     let counter_clone = counter_arc.clone();
     handles.push(tokio::spawn(async {
-        counter(rx, counter_clone).await;
+        match counter(rx, counter_clone).await {
+            Ok(_) => {}
+            Err(_) => {}
+        }
     }));
 
     let displayer_clone = counter_arc.clone();
     handles.push(tokio::spawn(async {
-        displayer(displayer_clone).await;
+        match displayer(displayer_clone).await {
+            Ok(_) => {}
+            Err(_) => {}
+        }
     }));
 
     futures::future::join_all(handles).await;

@@ -5,6 +5,7 @@ use tokio::net::TcpStream;
 use tokio::prelude::*;
 use tokio::time::{sleep, Duration};
 
+/// Child task that make a request and wait for response
 async fn make_request() -> Result<(), Box<dyn Error>> {
     // Connect to a peer
     let mut stream = TcpStream::connect("127.0.0.1:8900").await?;
@@ -22,14 +23,18 @@ async fn make_request() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn loop_requests() {
+/// Main task that spawns children at random intervals
+async fn loop_requests() -> Result<(), Box<dyn Error>> {
     let mut wait_duration = thread_rng().sample(Uniform::new(1000u64, 4000));
 
     loop {
         let _ = sleep(Duration::from_millis(wait_duration)).await;
         println!("spawning");
         tokio::spawn(async move {
-            make_request().await;
+            match make_request().await {
+                Ok(_) => {}
+                Err(_) => {}
+            }
         });
 
         wait_duration = thread_rng().sample(Uniform::new(1000u64, 4000));
@@ -39,9 +44,12 @@ async fn loop_requests() {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     tokio::spawn(async {
-        loop_requests().await;
+        match loop_requests().await {
+            Ok(_) => {}
+            Err(_) => {}
+        }
     })
-    .await;
+    .await?;
 
     Ok(())
 }
